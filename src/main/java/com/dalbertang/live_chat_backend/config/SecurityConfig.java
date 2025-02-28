@@ -22,14 +22,24 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/auth/user").authenticated()
+                .pathMatchers("/ws/**").permitAll() // Allow WebSocket connections without authentication
+                .pathMatchers("/admin/**").hasRole("ADMIN")
                 .anyExchange().authenticated()
             )
             .oauth2Login(withDefaults())
             .logout(logout -> logout
                 .logoutSuccessHandler(oidcLogoutSuccessHandler())
             );
+//            .authorizeExchange(exchanges -> exchanges
+//                .pathMatchers("/auth/user").authenticated()
+//                .anyExchange().authenticated()
+//            )
+//            .oauth2Login(withDefaults())
+//            .logout(logout -> logout
+//                .logoutSuccessHandler(oidcLogoutSuccessHandler())
+//            );
 
         return http.build();
     }
