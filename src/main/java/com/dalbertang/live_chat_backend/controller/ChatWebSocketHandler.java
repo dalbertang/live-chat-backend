@@ -40,8 +40,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
 
         // Stream of incoming messages from this session
         Mono<Void> incomingFlux = session.receive()
-            .publishOn(Schedulers.boundedElastic())
-            .map(msg -> {
+            .flatMap(msg -> {
                 String content = msg.getPayloadAsText();
                 System.out.println("**** content: " + content);
 
@@ -59,11 +58,8 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                             throw new RuntimeException(e);
                         }
                     })
-                    .doOnNext(this::sendMessageToClients)
-                    .then()
-                    .subscribe();
+                    .doOnNext(this::sendMessageToClients);
             })
-//            .doOnNext(chatSink::tryEmitNext)
             .then();
 
         Mono<Void> outgoingMessages = session.send(sink.asFlux().map(session::textMessage));
